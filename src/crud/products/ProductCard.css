@@ -1,0 +1,15 @@
+.card img{
+   width: 33%; /* Ajusta la altura según tu diseño */
+}
+
+.card{
+    border: 2px solid black;
+    border-radius: 5px;
+}
+.flex-container {
+  display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1rem;
+ 
+
+}
