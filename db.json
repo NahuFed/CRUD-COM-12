@@ -1,0 +1,56 @@
+{
+    "users": [
+        {
+        "id": 1,
+        "name": "Alice",
+        "email": "alice@mail.com",
+        "role": "admin"
+        },
+        {   
+        "id": 2,
+        "name": "Bob",
+        "email": "bob@mail.com",
+        "role": "user"
+        }        
+    ],
+
+    "products": [
+        {
+        "id": 1,
+        "name": "Laptop",
+        "code": "LAP123",
+        "price": 999.99,
+        "imgUrl": "https://example.com/laptop.jpg"
+        
+        },
+        {
+        "id": 2,
+        "name": "Smartphone",
+        "code": "SPH456",
+        "price": 499.99,
+        "imgUrl": "https://example.com/smartphone.jpg"
+        },
+        {
+        "id": 3,
+        "name": "Tablet",
+        "code": "TAB789",
+        "price": 299.99,
+        "imgUrl": "https://example.com/tablet.jpg"
+        },
+        {
+        "id": 4,
+        "name": "Smartwatch",
+        "code": "SWT012",
+        "price": 199.99,
+        "imgUrl": "https://example.com/smartwatch.jpg"
+        },
+        {
+        "id": 5,
+        "name": "Headphones",
+        "code": "HDP345",
+        "price": 89.99,
+        "imgUrl": "https://example.com/headphones.jpg"
+        }
+
+    ]
+}
