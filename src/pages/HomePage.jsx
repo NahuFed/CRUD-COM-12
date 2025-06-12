@@ -1,4 +1,3 @@
-import React from 'react';
 import ProductCard from '../crud/products/ProductCard';
 
 const HomePage = () => {

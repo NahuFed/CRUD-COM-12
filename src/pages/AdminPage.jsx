@@ -1,41 +1,114 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import ProductForm from '../crud/products/ProductForm';
 
 const AdminPage = () => {
+
+    const [products, setProducts] = useState([]);
+    const [showAddButton, setShowAddButton] = useState(true);
+
+    const [form, setForm] = useState({
+        name: '',
+        code: '',
+        price: '',
+        imgUrl: ''
+    });
+
+    const handleChange = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        });      
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        axios.post('http://localhost:3001/products', form)
+        .then((res) => {
+            alert('Producto agregado correctamente');
+            setProducts([...products, res.data]);
+            setForm({
+                name: '',
+                code: '',
+                price: '',
+                imgUrl: ''
+            });
+        })
+        .catch((err) => console.error(err));
+    }
+
+    useEffect (() => {
+        axios.get('http://localhost:3001/products')
+        .then((res) => setProducts(res.data))
+    }, []);
+
+    const handleDelete = (id) => {
+        axios.delete(`http://localhost:3001/products/${id}`)
+        .then(() => {
+            setProducts(products.filter(product => product.id !== id));
+            alert('Producto eliminado correctamente');
+        })
+        .catch((err) => console.error(err));
+    }
+
+    const handleEditButton = (id) => {
+        setShowAddButton(false);
+        axios.get(`http://localhost:3001/products/${id}`)
+        .then((res) => {
+            setForm(res.data);
+        })
+        .catch((err) => console.error(err));
+    }
+
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        axios.put(`http://localhost:3001/products/${form.id}`, form)
+        .then((res) => {
+            setProducts(products.map(product => product.id === form.id ? res.data : product));
+            alert('Producto editado correctamente');
+            setForm({
+                name: '',
+                code: '',
+                price: '',
+                imgUrl: ''
+            });
+            setShowAddButton(true);
+        })
+        .catch((err) => console.error(err));
+    }
+
     return (
     <div style={{ padding: '2rem' }}>
         <h1>Panel de Administración</h1>
-        <button style={{ marginBottom: '1rem' }}>Agregar Producto</button>
+        <ProductForm form={form} handleChange={handleChange} handleSubmit={handleSubmit} showAddButton={showAddButton} handleEditSubmit={handleEditSubmit}/>
+
+        <button onClick={()=>setShowAddButton(true)}>Agregar Productos</button>
+
         <table border="1" cellPadding="10" cellSpacing="0" width="100%">
         <thead>
             <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Precio</th>
-            <th>Categoría</th>
+            <th>Codigo</th>
             <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-            <td>1</td>
-            <td>Producto A</td>
-            <td>$100</td>
-            <td>Electrónica</td>
-            <td>
-                <button>Editar</button>
-                <button style={{ marginLeft: '0.5rem' }}>Eliminar</button>
-            </td>
-            </tr>
-            <tr>
-            <td>2</td>
-            <td>Producto B</td>
-            <td>$200</td>
-            <td>Hogar</td>
-            <td>
-                <button>Editar</button>
-                <button style={{ marginLeft: '0.5rem' }}>Eliminar</button>
-            </td>
-            </tr>
+            {products.map(product => (
+                <tr key={product.id}>
+                    <td>{product.id}</td>
+                    <td>{product.name}</td>
+                    <td>${product.price}</td>
+                    <td>{product.code}</td>
+                    <td>
+                        <button onClick={()=> {
+                            handleEditButton(Number(product.id))   
+                        } }>Editar</button>
+                        <button onClick={()=>handleDelete(Number(product.id))}>Eliminar</button>
+                    </td>
+                </tr>
+            ))}
         </tbody>
         </table>
     </div>
