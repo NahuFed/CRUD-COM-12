@@ -5,6 +5,8 @@ import HomePage from './pages/HomePage'
 import AdminPage from './pages/AdminPage'
 import Login from './pages/Login'
 import './App.css'
+import Products from './pages/Products'
+import Users from './pages/Users'
 
 function App() {
 
@@ -17,7 +19,11 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage/>} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminPage />} >
+          <Route path='products' element={<Products/> } />
+          <Route path='users' element={<Users/>} />          
+        </Route>
+        
         
       </Routes>
     </div>

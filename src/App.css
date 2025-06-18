@@ -38,7 +38,7 @@ header {
   flex: 1;
   margin-top: 60px; /* Igual a la altura del header */
   margin-bottom: 50px; /* Igual a la altura del footer */
-  padding: 20px;
+  
 }
 
 footer {
