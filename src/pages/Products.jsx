@@ -84,7 +84,15 @@ const Products = () => {
         <h1>Panel de Administración</h1>
         <ProductForm form={form} handleChange={handleChange} handleSubmit={handleSubmit} showAddButton={showAddButton} handleEditSubmit={handleEditSubmit}/>
 
-        <button onClick={()=>setShowAddButton(true)}>Agregar Productos</button>
+        <button onClick={()=>{setShowAddButton(true)
+            setForm({
+                name: '',
+                code: '',
+                price: '',
+                imgUrl: ''
+            });
+            scrollToTop();
+        }}>Agregar Productos</button>
 
         <table border="1" cellPadding="10" cellSpacing="0" width="100%">
         <thead>

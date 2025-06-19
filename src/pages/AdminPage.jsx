@@ -6,13 +6,13 @@ const AdminPage = () => {
     <>
     <nav id="admin-nav">
       <NavLink to="/admin/products" className="nav-link">
-        Products
+        Productos
       </NavLink>
       <NavLink to="/admin/users" className="nav-link">
-        Users
+        Usuarios
       </NavLink>
     </nav>
-    <Outlet />
+    <Outlet/>
     </>
   );
 };

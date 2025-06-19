@@ -2,15 +2,24 @@
   "users": [
     {
       "id": "1",
-      "name": "Alice",
-      "email": "alice@mail.com",
-      "role": "admin"
+      "name": "Admin",
+      "email": "admin@mail.com",
+      "role": "admin",
+      "password": "admin123"
     },
     {
       "id": "2",
       "name": "Bob",
       "email": "bob@mail.com",
-      "role": "user"
+      "role": "user",
+      "password": "user123"
+    },
+    {
+      "id": "dfb7",
+      "name": "Pepe",
+      "email": "pepe@mail.com",
+      "role": "admin",
+      "password": "user123"
     }
   ],
   "products": [
