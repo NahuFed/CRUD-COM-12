@@ -60,24 +60,17 @@ const handleSubmit = (e) => {
                     value={usuario}
                     onChange={e => setUsuario(e.target.value)}
                 />
-                <div style={{ position: 'relative' }}>
+                <div id='password-container'>
                     <input
+                        id='password-input'
                         type={showPassword ? "text" : "password"}
                         placeholder='Contraseña'
                         value={contrasena}
                         onChange={e => setContrasena(e.target.value)}
-                        style={{ width: "320px"}}
-                    />
-                    <span
+                        
+                        />
+                    <span id='toggle-password'
                         onClick={() => setShowPassword(!showPassword)}
-                        style={{
-                            position: 'absolute',
-                            right: '8px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            cursor: 'pointer',
-                            userSelect: 'none'
-                        }}
                         title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                         {showPassword ? '🙈' : '👁️'}
