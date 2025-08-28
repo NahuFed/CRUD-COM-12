@@ -1,5 +1,5 @@
 import UserFormModal from "../crud/users/UserFormModal";
-import axios from "axios";
+import { getAllUsers, createUser, updateUser, deleteUser } from "../helpers/queriesUsuarios";
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -24,11 +24,17 @@ const Users = () => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/users")
-      .then((res) => setUsers(res.data))
-      .catch((err) => console.error("Error fetching users:", err));
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await getAllUsers();
+      setUsers(usersData);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({
@@ -37,28 +43,25 @@ const Users = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      axios
-        .put(`http://localhost:3001/users/${form.id}`, form)
-        .then((res) => {
-          setUsers(
-            users.map((user) => (user.id === form.id ? res.data : user))
-          );
-          setOpenModal(false);
-          alert("Usuario actualizado correctamente");
-        })
-        .catch((err) => console.error("Error updating user:", err));
-    } else {
-      axios
-        .post("http://localhost:3001/users", form)
-        .then((res) => {
-          setUsers([...users, res.data]);
-          setOpenModal(false);
-          alert("Usuario agregado correctamente");
-        })
-        .catch((err) => console.error("Error adding user:", err));
+    try {
+      if (isEdit) {
+        const updatedUser = await updateUser(form.id, form);
+        setUsers(
+          users.map((user) => (user.id === form.id ? updatedUser : user))
+        );
+        setOpenModal(false);
+        alert("Usuario actualizado correctamente");
+      } else {
+        const newUser = await createUser(form);
+        setUsers([...users, newUser]);
+        setOpenModal(false);
+        alert("Usuario agregado correctamente");
+      }
+    } catch (err) {
+      console.error("Error submitting user:", err);
+      alert("Error al procesar el usuario");
     }
   };
 
@@ -76,15 +79,16 @@ const Users = () => {
     handleOpenModal();
   };
 
-  const handleDeleteUser = (id) => {
+  const handleDeleteUser = async (id) => {
     if (window.confirm("¿Estás seguro de que quieres eliminar este usuario?")) {
-      axios
-        .delete(`http://localhost:3001/users/${id}`)
-        .then(() => {
-          setUsers(users.filter((user) => user.id !== id));
-          alert("Usuario eliminado correctamente");
-        })
-        .catch((err) => console.error("Error deleting user:", err));
+      try {
+        await deleteUser(id);
+        setUsers(users.filter((user) => user.id !== id));
+        alert("Usuario eliminado correctamente");
+      } catch (err) {
+        console.error("Error deleting user:", err);
+        alert("Error al eliminar el usuario");
+      }
     }
   };
   return (

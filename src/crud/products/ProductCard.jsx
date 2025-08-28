@@ -1,6 +1,6 @@
 import React from 'react';
 import './ProductCard.css'; 
-import axios from 'axios';
+import { getAllProducts } from '../../helpers/queriesProductos';
 import { useState, useEffect } from 'react';
 
 const ProductCard = () => {
@@ -8,9 +8,17 @@ const ProductCard = () => {
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:3001/products')
-        .then((res)=>setProducts(res.data))
+        loadProducts();
     }, []);
+
+    const loadProducts = async () => {
+        try {
+            const productsData = await getAllProducts();
+            setProducts(productsData);
+        } catch (err) {
+            console.error('Error loading products:', err);
+        }
+    };
 
     
     return (

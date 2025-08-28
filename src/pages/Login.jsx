@@ -1,5 +1,5 @@
 import { use, useEffect,useState } from 'react';
-import axios from 'axios';
+import { getAllUsers } from '../helpers/queriesUsuarios';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,13 +17,18 @@ const navigate = useNavigate();
 
 
 useEffect(() => {
-    axios.get('http://localhost:3001/users')
-        .then((res) => {
-            setUsuarios(res.data);
-            console.log(res.data);
-        })
-        .catch((err) => console.error(err));
+    loadUsers();
 }, []);
+
+const loadUsers = async () => {
+    try {
+        const usersData = await getAllUsers();
+        setUsuarios(usersData);
+        console.log(usersData);
+    } catch (err) {
+        console.error('Error loading users:', err);
+    }
+};
 
 const handleSubmit = (e) => {
     e.preventDefault();
