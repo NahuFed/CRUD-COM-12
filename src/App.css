@@ -73,3 +73,7 @@ footer {
   justify-content: center;
   z-index: 1000;
 }
+
+nav{
+  background-color: #f00;
+}
