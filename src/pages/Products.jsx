@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } from "../helpers/queriesProductos";
-import ProductForm from "../crud/products/ProductForm";
-import { scrollToTop } from "../utils/scrollToTop";
+import ProductFormModal from "../crud/products/ProductFormModal";
+import {
+  Button,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Table,
+  Typography,
+  Box,
+} from "@mui/material";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [showAddButton, setShowAddButton] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -13,31 +24,6 @@ const Products = () => {
     price: "",
     imgUrl: "",
   });
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const newProduct = await createProduct(form);
-      alert("Producto agregado correctamente");
-      setProducts([...products, newProduct]);
-      setForm({
-        name: "",
-        code: "",
-        price: "",
-        imgUrl: "",
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Error al agregar el producto");
-    }
-  };
 
   useEffect(() => {
     loadProducts();
@@ -52,113 +38,143 @@ const Products = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteProduct(id);
-      setProducts(products.filter((product) => product.id !== id));
-      alert("Producto eliminado correctamente");
-    } catch (err) {
-      console.error(err);
-      alert("Error al eliminar el producto");
-    }
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleEditButton = async (id) => {
-    setShowAddButton(false);
-    try {
-      const product = await getProductById(id);
-      setForm(product);
-      scrollToTop();
-    } catch (err) {
-      console.error(err);
-      alert("Error al cargar el producto para editar");
-    }
-  };
-
-  const handleEditSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const updatedProduct = await updateProduct(form.id, form);
-      setProducts(
-        products.map((product) =>
-          product.id === form.id ? updatedProduct : product
-        )
-      );
-      alert("Producto editado correctamente");
-      setForm({
-        name: "",
-        code: "",
-        price: "",
-        imgUrl: "",
-      });
-
-      setShowAddButton(true);
+      if (isEdit) {
+        const updatedProduct = await updateProduct(form.id, form);
+        setProducts(
+          products.map((product) =>
+            product.id === form.id ? updatedProduct : product
+          )
+        );
+        setOpenModal(false);
+        alert("Producto actualizado correctamente");
+      } else {
+        const newProduct = await createProduct(form);
+        setProducts([...products, newProduct]);
+        setOpenModal(false);
+        alert("Producto agregado correctamente");
+      }
+      resetForm();
     } catch (err) {
-      console.error(err);
-      alert("Error al editar el producto");
+      console.error("Error submitting product:", err);
+      alert("Error al procesar el producto");
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      name: "",
+      code: "",
+      price: "",
+      imgUrl: "",
+    });
+  };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleEditProduct = async (product) => {
+    setIsEdit(true);
+    setForm(product);
+    handleOpenModal();
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+      try {
+        await deleteProduct(id);
+        setProducts(products.filter((product) => product.id !== id));
+        alert("Producto eliminado correctamente");
+      } catch (err) {
+        console.error("Error deleting product:", err);
+        alert("Error al eliminar el producto");
+      }
     }
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Panel de Administración</h1>
-      <ProductForm
+    <Box sx={{ padding: "2rem" }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Gestión de Productos
+      </Typography>
+      
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          setIsEdit(false);
+          resetForm();
+          handleOpenModal();
+        }}
+        sx={{ marginBottom: 2 }}
+      >
+        Crear Producto
+      </Button>
+
+      <ProductFormModal
         form={form}
         handleChange={handleChange}
         handleSubmit={handleSubmit}
-        showAddButton={showAddButton}
-        handleEditSubmit={handleEditSubmit}
+        isEdit={isEdit}
+        open={openModal}
+        onClose={handleCloseModal}
       />
 
-      <button
-        onClick={() => {
-          setShowAddButton(true);
-          setForm({
-            name: "",
-            code: "",
-            price: "",
-            imgUrl: "",
-          });
-          scrollToTop();
-        }}
-      >
-        Agregar Productos
-      </button>
-
-      <table border="1" cellPadding="10" cellSpacing="0" width="100%">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Codigo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-              <td>{product.name}</td>
-              <td>${product.price}</td>
-              <td>{product.code}</td>
-              <td>
-                <button
-                  onClick={() => {
-                    handleEditButton(Number(product.id));
-                  }}
-                >
-                  Editar
-                </button>
-                <button onClick={() => handleDelete(Number(product.id))}>
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Código</TableCell>
+              <TableCell>Precio</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>{product.id}</TableCell>
+                <TableCell>{product.name}</TableCell>
+                <TableCell>{product.code}</TableCell>
+                <TableCell>${product.price}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleEditProduct(product)}
+                    sx={{ marginRight: 1 }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleDeleteProduct(product.id)}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const URL_USUARIOS = import.meta.env.VITE_API_USUARIOS;
+const URL_LOGIN = import.meta.env.VITE_API_LOGIN;
 
 // Obtener todos los usuarios
 export const getAllUsers = async () => {
@@ -45,3 +46,13 @@ export const deleteUser = async (id) => {
     throw error;
   }
 };
+
+export const login = async (email, password) => {
+  try {
+    const response = await axios.post(URL_LOGIN, { email, password });
+    return response.data;
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error);
+    throw error;
+  }
+}

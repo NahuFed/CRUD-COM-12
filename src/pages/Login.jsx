@@ -1,7 +1,8 @@
 import { use, useEffect,useState } from 'react';
-import { getAllUsers } from '../helpers/queriesUsuarios';
+import { getAllUsers,login } from '../helpers/queriesUsuarios';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
 //la logica basica de este login es: obtener los datos del usuario desde un formulario,
@@ -33,30 +34,30 @@ const loadUsers = async () => {
 const handleSubmit = (e) => {
     e.preventDefault();
     // Validar que el usuario exista y que la contraseña sea correcta
-    const usuarioEncontrado = usuarios.find(user => user.email === usuario && user.password === contrasena);
-
-    if (usuarioEncontrado) {
-        // Guardar los datos del usuario en el localStorage
-        localStorage.setItem('user', JSON.stringify(usuarioEncontrado));
-        // Redirigir al usuario a la pagina de inicio
-        if (usuarioEncontrado.role === 'admin') {
-            navigate('/admin/products');
+    login(usuario, contrasena)
+    .then(usuarioEncontrado => {
+        if (usuarioEncontrado) {
+            // Guardar los datos del usuario en el localStorage
+            localStorage.setItem('user', JSON.stringify(usuarioEncontrado));
+            // Redirigir al usuario a la pagina de inicio
+            if (usuarioEncontrado.role === 'admin') {
+                navigate('/admin/products');
+            }
+            else if (usuarioEncontrado.role === 'user') {
+                navigate('/');
+            }
+        } else {
+            alert('Usuario o contraseña incorrectos');
         }
-        else if (usuarioEncontrado.role === 'user') {
-            navigate('/');
-        }
-
-    } else {
-        alert('Usuario o contraseña incorrectos');
-    }
+    });
 }
 
 
 
     const [showPassword, setShowPassword] = useState(false);
-
-    return (
-        <div id='login-container'>
+    
+        return (
+            <div id='login-container'>
             <h2 id='login-h2'>Login</h2>
             <form onSubmit={handleSubmit} id='login-form'>
                 <input

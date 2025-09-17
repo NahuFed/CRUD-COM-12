@@ -13,6 +13,13 @@
       "email": "bob@mail.com",
       "role": "user",
       "password": "user123"
+    },    
+    {
+      "id": "3",
+      "name": "Bob",
+      "email": "bo2b@mail.com",
+      "role": "user",
+      "password": "user123"
     }
   ],
   "products": [
