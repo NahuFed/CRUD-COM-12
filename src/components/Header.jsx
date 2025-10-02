@@ -1,11 +1,63 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { verifyAuth, logout as logoutService } from "../helpers/queriesUsuarios";
 import "./Header.css";
 
-function Header () {
-    
-  const user = JSON.parse(localStorage.getItem('user'));
-  const isAdmin = user && user.role === 'admin';
-  const navigate = useNavigate();
+function Header() {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    // ✅ Verificar el rol real desde el token al cargar
+    useEffect(() => {
+        checkUserAuth();
+    }, []);
+
+    const checkUserAuth = async () => {
+        try {
+            const authResult = await verifyAuth();
+            if (authResult.success) {
+                setUser(authResult.user);
+                // Sincronizar localStorage con datos reales
+                localStorage.setItem('user', JSON.stringify(authResult.user));
+            } else {
+                setUser(null);
+                localStorage.removeItem('user');
+            }
+        } catch (error) {
+            console.error('Error verificando autenticación:', error);
+            setUser(null);
+            localStorage.removeItem('user');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ✅ Logout completo (cookie + localStorage)
+    const handleLogout = async () => {
+        try {
+            setLoading(true);
+            await logoutService(); // Elimina la cookie JWT del backend
+            setUser(null);
+            localStorage.removeItem('user');
+            navigate('/login');
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            // Limpiar localmente aunque falle el backend
+            setUser(null);
+            localStorage.removeItem('user');
+            navigate('/login');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const isAdmin = user && user.role === 'admin';
+
+    if (loading) {
+        return <div>Cargando...</div>; // O tu componente de loading
+    }
+
     return (
         <header className="header">
             <nav className="nav-container">
@@ -47,12 +99,10 @@ function Header () {
                         </span>
                         <button 
                             className="logout-btn" 
-                            onClick={() => {
-                                localStorage.removeItem('user');
-                                navigate('/login');
-                            }}
+                            onClick={handleLogout}
+                            disabled={loading}
                         >
-                            🚪 Logout
+                            {loading ? '⏳' : '🚪'} Logout
                         </button>
                     </div>
                 )}
