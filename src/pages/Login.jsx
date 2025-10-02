@@ -1,88 +1,115 @@
-import { use, useEffect,useState } from 'react';
-import { getAllUsers,login } from '../helpers/queriesUsuarios';
+import { useEffect, useState } from 'react';
+import { login } from '../helpers/queriesUsuarios';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const Login = () => {
-//la logica basica de este login es: obtener los datos del usuario desde un formulario,
-//validar que el usuario exista y que la contraseña sea correcta, y si es asi, 
-//guardar los datos del usuario en el localStorage y redirigir al usuario a la pagina de inicio.
+// Nueva lógica de login:
+// 1. Obtener credenciales del formulario
+// 2. Enviar al backend para autenticación
+// 3. El backend establece una cookie JWT httpOnly
+// 4. Guardar datos básicos del usuario en localStorage para UI
+// 5. Redirigir según el rol del usuario
 
-const [usuario, setUsuario] = useState("");
-const [contrasena, setContrasena] = useState("");
-const [usuarios, setUsuarios] = useState([]);
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
 const navigate = useNavigate();
-//useNavigate es un hook de react-router-dom que nos permite redirigir al usuario a
-//otra pagina. En este caso, lo usamos para redirigir al usuario a la pagina de inicio
 
-
+// Limpiar error cuando el usuario empiece a escribir
 useEffect(() => {
-    loadUsers();
-}, []);
-
-const loadUsers = async () => {
-    try {
-        const usersData = await getAllUsers();
-        setUsuarios(usersData);
-        console.log(usersData);
-    } catch (err) {
-        console.error('Error loading users:', err);
+    if (error) {
+        setError("");
     }
-};
+}, [email, password]);
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validar que el usuario exista y que la contraseña sea correcta
-    login(usuario, contrasena)
-    .then(usuarioEncontrado => {
-        if (usuarioEncontrado) {
-            // Guardar los datos del usuario en el localStorage
-            localStorage.setItem('user', JSON.stringify(usuarioEncontrado));
-            // Redirigir al usuario a la pagina de inicio
-            if (usuarioEncontrado.role === 'admin') {
+    setLoading(true);
+    setError("");
+
+    try {
+        // Validaciones básicas
+        if (!email || !password) {
+            setError("Por favor, complete todos los campos");
+            setLoading(false);
+            return;
+        }
+
+        // Llamar a la función de login que maneja cookies JWT
+        const result = await login(email, password);
+        console.log('Resultado del login:', result);
+        if (result.success) {
+            // Guardar datos básicos del usuario para la UI
+            localStorage.setItem('user', JSON.stringify(result.user));
+            
+            // Redirigir según el rol del usuario
+            if (result.user.role === 'admin') {
                 navigate('/admin/products');
-            }
-            else if (usuarioEncontrado.role === 'user') {
+            } else {
                 navigate('/');
             }
         } else {
-            alert('Usuario o contraseña incorrectos');
+            setError(result.message || 'Error en el login');
         }
-    });
-}
+    } catch (err) {
+        console.error('Error durante el login:', err);
+        setError('Error de conexión. Por favor, intente nuevamente.');
+    } finally {
+        setLoading(false);
+    }
+};
 
 
 
     const [showPassword, setShowPassword] = useState(false);
-    
-        return (
-            <div id='login-container'>
+
+    return (
+        <div id='login-container'>
             <h2 id='login-h2'>Login</h2>
+            {error && (
+                <div style={{ 
+                    color: 'red', 
+                    marginBottom: '10px', 
+                    padding: '8px', 
+                    border: '1px solid red', 
+                    borderRadius: '4px',
+                    backgroundColor: '#ffe6e6'
+                }}>
+                    {error}
+                </div>
+            )}
             <form onSubmit={handleSubmit} id='login-form'>
                 <input
-                    type="text"
+                    type="email"
                     placeholder='Email'
-                    value={usuario}
-                    onChange={e => setUsuario(e.target.value)}
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
                 />
                 <div id='password-container'>
                     <input
                         id='password-input'
                         type={showPassword ? "text" : "password"}
                         placeholder='Contraseña'
-                        value={contrasena}
-                        onChange={e => setContrasena(e.target.value)}
-                        
-                        />
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        disabled={loading}
+                        required
+                    />
                     <span id='toggle-password'
                         onClick={() => setShowPassword(!showPassword)}
                         title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
                     >
                         {showPassword ? '🙈' : '👁️'}
                     </span>
                 </div>
-                <button type="submit">Ingresar</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Ingresando...' : 'Ingresar'}
+                </button>
             </form>
         </div>
     );
