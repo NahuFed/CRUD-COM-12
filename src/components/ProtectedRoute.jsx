@@ -1,52 +1,35 @@
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { verifyAuth } from "../helpers/queriesUsuarios";
+import useUserStore from "../store/useUserStore";
 
 // Componente para proteger rutas que requieren autenticación
-// Ahora funciona con cookies JWT en lugar de localStorage únicamente
+// Ahora funciona con Zustand y cookies JWT
 const ProtectedRoute = ({ children, role }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(null); // null = cargando
-    const [userRole, setUserRole] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const { user, isAuthenticated, verifyAuth } = useUserStore();
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // Primero intentar verificar con el servidor (cookie JWT)
-                const authResult = await verifyAuth();
-                
-                if (authResult.success) {
-                    setIsAuthenticated(true);
-                    setUserRole(authResult.user.role);
-                } else {
-                    // Si falla la verificación del servidor, revisar localStorage como fallback
-                    const localUser = localStorage.getItem('user');
-                    if (localUser) {
-                        const userData = JSON.parse(localUser);
-                        setIsAuthenticated(true);
-                        setUserRole(userData.role);
-                    } else {
-                        setIsAuthenticated(false);
-                    }
-                }
+                // Verificar autenticación usando el store de Zustand
+                await verifyAuth();
             } catch (error) {
                 console.error('Error verificando autenticación:', error);
-                // Fallback a localStorage si hay error de red
-                const localUser = localStorage.getItem('user');
-                if (localUser) {
-                    const userData = JSON.parse(localUser);
-                    setIsAuthenticated(true);
-                    setUserRole(userData.role);
-                } else {
-                    setIsAuthenticated(false);
-                }
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        checkAuth();
-    }, []);
+        // Si no tenemos datos del usuario, verificar autenticación
+        if (!user) {
+            checkAuth();
+        } else {
+            setIsLoading(false);
+        }
+    }, [user, verifyAuth]);
 
     // Mostrar loading mientras verificamos autenticación
-    if (isAuthenticated === null) {
+    if (isLoading) {
         return (
             <div style={{ 
                 display: 'flex', 
@@ -60,13 +43,23 @@ const ProtectedRoute = ({ children, role }) => {
     }
 
     // Si no está autenticado, redirigir al login
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
         return <Navigate to="/login" replace />;
     }
 
-    // Si se requiere un rol específico y el usuario no lo tiene, redirigir
-    if (role && userRole !== role) {
-        return <Navigate to="/login" replace />;
+    // Si se requiere un rol específico, verificar que el usuario lo tenga
+    if (role) {
+        // Si role es un array, verificar que el usuario tenga uno de esos roles
+        if (Array.isArray(role)) {
+            if (!role.includes(user.role)) {
+                return <Navigate to="/login" replace />;
+            }
+        } else {
+            // Si role es un string, verificar que coincida exactamente
+            if (user.role !== role) {
+                return <Navigate to="/login" replace />;
+            }
+        }
     }
 
     // Si todo está bien, mostrar el componente hijo

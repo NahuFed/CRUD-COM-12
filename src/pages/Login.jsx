@@ -1,63 +1,69 @@
 import { useEffect, useState } from 'react';
-import { login } from '../helpers/queriesUsuarios';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
+import useUserStore from '../store/useUserStore';
 
 const Login = () => {
-// Nueva lógica de login:
+// Nueva lógica de login con Zustand:
 // 1. Obtener credenciales del formulario
-// 2. Enviar al backend para autenticación
+// 2. Usar el store de Zustand para hacer login
 // 3. El backend establece una cookie JWT httpOnly
-// 4. Guardar datos básicos del usuario en localStorage para UI
+// 4. Zustand guarda los datos del usuario en el estado global
 // 5. Redirigir según el rol del usuario
 
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState("");
+const [localError, setLocalError] = useState("");
 const navigate = useNavigate();
 
-// Limpiar error cuando el usuario empiece a escribir
+// Obtener funciones y estado del store de Zustand
+const { login, isLoading, error, clearError, user, isAuthenticated } = useUserStore();
+
+// Si ya está autenticado, redirigir
 useEffect(() => {
-    if (error) {
-        setError("");
+    if (isAuthenticated && user) {
+        if (user.role === 'admin' || user.role === 'superadmin') {
+            navigate('/admin/products');
+        } else {
+            navigate('/');
+        }
     }
-}, [email, password]);
+}, [isAuthenticated, user, navigate]);
+
+// Limpiar errores cuando el usuario empiece a escribir
+useEffect(() => {
+    if (localError) {
+        setLocalError("");
+    }
+    if (error) {
+        clearError();
+    }
+}, [email, password, error, clearError]);
 
 const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setLocalError("");
+
+    // Validaciones básicas
+    if (!email || !password) {
+        setLocalError("Por favor, complete todos los campos");
+        return;
+    }
 
     try {
-        // Validaciones básicas
-        if (!email || !password) {
-            setError("Por favor, complete todos los campos");
-            setLoading(false);
-            return;
-        }
-
-        // Llamar a la función de login que maneja cookies JWT
+        // Usar la función de login del store
         const result = await login(email, password);
         console.log('Resultado del login:', result);
+        
         if (result.success) {
-            // Guardar datos básicos del usuario para la UI
-            localStorage.setItem('user', JSON.stringify(result.user));
-            
-            // Redirigir según el rol del usuario
-            if (result.user.role === 'admin'|| result.user.role === 'superadmin') {
-                navigate('/admin/products');
-            } else {
-                navigate('/');
-            }
+            // El store ya se encarga de actualizar el estado global
+            // La redirección se maneja en el useEffect de arriba
         } else {
-            setError(result.message || 'Error en el login');
+            setLocalError(result.message || 'Error en el login');
         }
     } catch (err) {
         console.error('Error durante el login:', err);
-        setError('Error de conexión. Por favor, intente nuevamente.');
-    } finally {
-        setLoading(false);
+        setLocalError('Error de conexión. Por favor, intente nuevamente.');
     }
 };
 
@@ -68,7 +74,7 @@ const handleSubmit = async (e) => {
     return (
         <div id='login-container'>
             <h2 id='login-h2'>Login</h2>
-            {error && (
+            {(localError || error) && (
                 <div style={{ 
                     color: 'red', 
                     marginBottom: '10px', 
@@ -77,7 +83,7 @@ const handleSubmit = async (e) => {
                     borderRadius: '4px',
                     backgroundColor: '#ffe6e6'
                 }}>
-                    {error}
+                    {localError || error}
                 </div>
             )}
             <form onSubmit={handleSubmit} id='login-form'>
@@ -86,7 +92,7 @@ const handleSubmit = async (e) => {
                     placeholder='Email'
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    disabled={loading}
+                    disabled={isLoading}
                     required
                 />
                 <div id='password-container'>
@@ -96,19 +102,19 @@ const handleSubmit = async (e) => {
                         placeholder='Contraseña'
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        disabled={loading}
+                        disabled={isLoading}
                         required
                     />
                     <span id='toggle-password'
                         onClick={() => setShowPassword(!showPassword)}
                         title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+                        style={{ cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                         {showPassword ? '🙈' : '👁️'}
                     </span>
                 </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Ingresando...' : 'Ingresar'}
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
             </form>
         </div>
