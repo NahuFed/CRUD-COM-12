@@ -21,7 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <></>
           <Route path="/admin" element={
-            <ProtectedRoute role={"admin"}>
+            <ProtectedRoute role={['admin','superadmin']}>
                 <AdminPage />
             </ProtectedRoute>
           }>        

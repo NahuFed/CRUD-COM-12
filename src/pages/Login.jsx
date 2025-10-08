@@ -45,7 +45,7 @@ const handleSubmit = async (e) => {
             localStorage.setItem('user', JSON.stringify(result.user));
             
             // Redirigir según el rol del usuario
-            if (result.user.role === 'admin') {
+            if (result.user.role === 'admin'|| result.user.role === 'superadmin') {
                 navigate('/admin/products');
             } else {
                 navigate('/');
