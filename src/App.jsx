@@ -8,9 +8,26 @@ import "./App.css";
 import Products from "./pages/Products";
 import Users from "./pages/Users";
 import ProtectedRoute from "./components/ProtectedRoute";
+import useAuthInitializer from "./hooks/useAuthInitializer";
 
 function App() {
+  // Inicializar la autenticación al cargar la aplicación
+  const { isLoading } = useAuthInitializer();
 
+  // Mostrar un loading mientras se inicializa la autenticación
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Cargando...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -21,7 +38,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <></>
           <Route path="/admin" element={
-            <ProtectedRoute role={"admin"}>
+            <ProtectedRoute role={['admin','superadmin']}>
                 <AdminPage />
             </ProtectedRoute>
           }>        
