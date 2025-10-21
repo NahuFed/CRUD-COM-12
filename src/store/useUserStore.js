@@ -29,7 +29,8 @@ const useUserStore = create((set, get) => ({
       
       // Estructura del usuario basada en la respuesta del backend
       const userData = {
-        id: response.data.user?.id || response.data.user?._id,
+        _id: response.data.user?._id || response.data.user?.id, // MongoDB usa _id
+        id: response.data.user?._id || response.data.user?.id,  // Mantener compatibilidad
         name: response.data.user?.username,
         email: response.data.user?.email || email,
         role: response.data.user?.role || 'user'
@@ -79,7 +80,8 @@ const useUserStore = create((set, get) => ({
       // Para fetchUserData, sabemos que req.user está disponible en el backend
       // pero necesitamos que el backend devuelva el ID también
       const userData = {
-        id: response.data.id || response.data._id, // Por si el backend lo devuelve
+        _id: response.data._id || response.data.id, // MongoDB usa _id
+        id: response.data._id || response.data.id,   // Mantener compatibilidad
         name: response.data.username,
         email: response.data.email,
         role: response.data.role || 'user'

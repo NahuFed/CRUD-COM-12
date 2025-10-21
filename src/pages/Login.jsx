@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './Login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useUserStore from '../store/useUserStore';
 
 const Login = () => {
@@ -117,6 +117,14 @@ const handleSubmit = async (e) => {
                     {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
             </form>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <p style={{ color: '#666', fontSize: '14px' }}>
+                    ¿No tienes cuenta?{' '}
+                    <Link to="/register" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '600' }}>
+                        Regístrate aquí
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 };
