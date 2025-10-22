@@ -117,6 +117,19 @@ const handleSubmit = async (e) => {
                     {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
             </form>
+            <div style={{ textAlign: 'center', marginTop: '15px' }}>
+                <Link 
+                    to="/forgot-password" 
+                    style={{ 
+                        color: '#667eea', 
+                        textDecoration: 'none', 
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }}
+                >
+                    ¿Olvidaste tu contraseña?
+                </Link>
+            </div>
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
                 <p style={{ color: '#666', fontSize: '14px' }}>
                     ¿No tienes cuenta?{' '}

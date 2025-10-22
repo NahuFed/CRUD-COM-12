@@ -6,6 +6,8 @@ import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/AdminPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import "./App.css";
 import Products from "./pages/Products";
 import Users from "./pages/Users";
@@ -55,6 +57,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={
             <ProtectedRoute role={['admin','superadmin']}>
                 <AdminPage />
